@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserve Your Seat — Valente Cinema</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #000;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  body::-webkit-scrollbar { display: none; }
+  .page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade { opacity: 0; animation: fadeUp 0.8s ease forwards; }
+  .f1 { animation-delay: 0.1s; } .f2 { animation-delay: 0.3s; }
+  .f3 { animation-delay: 0.5s; } .f4 { animation-delay: 0.7s; }
+  .f5 { animation-delay: 0.9s; } .f6 { animation-delay: 1.1s; }
+
+  /* — Shared components — */
+  .cinema-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: #C9A84C;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    word-wrap: break-word;
+  }
+  .divider { display: flex; align-items: center; width: 100%; gap: 10px; margin: 16px 0; }
+  .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, #C9A84C); }
+  .divider-line.rev { background: linear-gradient(to left, transparent, #C9A84C); }
+  .divider-diamond { width: 7px; height: 7px; background: #C9A84C; transform: rotate(45deg); flex-shrink: 0; }
+  .divider-diamond.sm { width: 4px; height: 4px; opacity: 0.5; }
+
+  /* — Film identity — */
+  .film-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.1;
+    word-wrap: break-word;
+  }
+  .film-date {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #999;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* — RSVP form — */
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    color: #C9A84C;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .rsvp-form { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+
+  .field-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: #777;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .field-input {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  .field-input:focus { border-color: #C9A84C; }
+  .field-input::placeholder { color: #444; }
+
+  /* attendance toggle */
+  .toggle-wrap { display: flex; width: 100%; gap: 0; }
+  .toggle-btn {
+    flex: 1;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    color: #555;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 13px 8px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    text-align: center;
+  }
+  .toggle-btn:first-child { border-right: none; }
+  .toggle-btn.active-yes  { background: #C9A84C; color: #000; border-color: #C9A84C; }
+  .toggle-btn.active-no   { background: #1a1a1a; color: #888; border-color: #444; }
+
+  textarea.field-input { resize: none; height: 90px; }
+
+  .submit-btn {
+    width: 100%;
+    background: #C9A84C;
+    color: #000;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 14px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .submit-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* confirmation messages */
+  .confirm-msg {
+    display: none;
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #C9A84C;
+    text-align: center;
+    letter-spacing: 2px;
+    padding: 8px 0;
+  }
+  .error-msg {
+    display: none;
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: #888;
+    text-align: center;
+  }
+
+  /* — Guest Book — */
+  .guestbook { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .guestbook-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    color: #C9A84C;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .headcount {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .guest-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 0;
+    border-bottom: 1px solid #111;
+  }
+  .guest-entry:last-child { border-bottom: none; }
+  .guest-name {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #C9A84C;
+  }
+  .guest-note {
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: #888;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="cinema-name fade f1">Valente Bottom Basement Cinema</div>
+  <div class="divider fade f1">
+    <div class="divider-line"></div><div class="divider-diamond sm"></div>
+    <div class="divider-diamond"></div><div class="divider-diamond sm"></div>
+    <div class="divider-line rev"></div>
+  </div>
+
+  <!-- Film identity (hardcoded — Sprint 3 will wire dynamically) -->
+  <div class="film-title fade f2">The Room</div>
+  <div class="film-date fade f2">Sunday, March 29, 2026</div>
+
+  <div class="divider fade f3">
+    <div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line rev"></div>
+  </div>
+
+  <!-- RSVP form -->
+  <div class="section-label fade f3">Reserve Your Seat</div>
+  <div class="rsvp-form fade f4" id="rsvp-form">
+
+    <div>
+      <label class="field-label" for="rsvp-name">Your Name</label>
+      <input class="field-input" id="rsvp-name" type="text" placeholder="Full name" autocomplete="name" required/>
+    </div>
+
+    <div>
+      <label class="field-label">Attendance</label>
+      <div class="toggle-wrap">
+        <button class="toggle-btn active-yes" id="btn-yes" type="button">I'll Be There</button>
+        <button class="toggle-btn" id="btn-no" type="button">Can't Make It</button>
+      </div>
+    </div>
+
+    <div id="note-wrap">
+      <label class="field-label" for="rsvp-note">Note <span style="color:#444;letter-spacing:1px;font-size:7px;">(optional)</span></label>
+      <textarea class="field-input" id="rsvp-note" placeholder="Anything you'd like us to know…"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" type="button">Confirm</button>
+  </div>
+
+  <div class="confirm-msg" id="msg-yes">Your seat is reserved.</div>
+  <div class="confirm-msg" id="msg-no" style="color:#666;">You'll be missed.</div>
+  <div class="error-msg"   id="msg-err">Something went wrong. Please try again.</div>
+
+  <div class="divider fade f5">
+    <div class="divider-line"></div><div class="divider-diamond sm"></div>
+    <div class="divider-diamond"></div><div class="divider-diamond sm"></div>
+    <div class="divider-line rev"></div>
+  </div>
+
+  <!-- Guest Book (loaded from RSVP CSV, hidden if empty) -->
+  <div class="guestbook hidden fade f5" id="guestbook">
+    <div class="guestbook-label">Guest Book</div>
+    <div class="headcount" id="headcount"></div>
+    <div id="guest-list"></div>
+  </div>
+  <div class="divider hidden fade f6" id="guestbook-divider-bottom">
+    <div class="divider-line"></div><div class="divider-diamond sm"></div>
+    <div class="divider-diamond"></div><div class="divider-diamond sm"></div>
+    <div class="divider-line rev"></div>
+  </div>
+
+</div>
+<script>
+  // Hardcoded for Sprint 2 — Sprint 3 will wire from Screenings sheet
+  const SCREENING_ID = 'SCR003';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAJx2a7hv3KC6FwBQ66kCVpKDenLS1zW-gBsKlb68WTU11UvD0-uzXq2mmad21jIFy/exec';
+  const RSVP_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKBXwCqAKyFzg4zkmpQGTwfVdPnL072BF3_vgFO2LgfWcG12d8yZ-LivswqncfcVZVgQ1ovr-SsZ0h/pub?gid=1625783515&single=true&output=csv';
+
+  // — Attendance toggle —
+  let attending = true;
+  document.getElementById('btn-yes').addEventListener('click', () => {
+    attending = true;
+    document.getElementById('btn-yes').className = 'toggle-btn active-yes';
+    document.getElementById('btn-no').className  = 'toggle-btn';
+    document.getElementById('note-wrap').style.display = '';
+  });
+  document.getElementById('btn-no').addEventListener('click', () => {
+    attending = false;
+    document.getElementById('btn-no').className  = 'toggle-btn active-no';
+    document.getElementById('btn-yes').className = 'toggle-btn';
+    document.getElementById('note-wrap').style.display = 'none';
+  });
+
+  // — Submit —
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const name = document.getElementById('rsvp-name').value.trim();
+    if (!name) {
+      document.getElementById('rsvp-name').focus();
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+
+    // Can't Make It — no POST needed
+    if (!attending) {
+      hideForm();
+      show('msg-no');
+      return;
+    }
+
+    const note = document.getElementById('rsvp-note').value.trim();
+    const payload = new URLSearchParams({ screening_id: SCREENING_ID, name, comment: note });
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString()
+      });
+      hideForm();
+      show('msg-yes');
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      show('msg-err');
+    }
+  });
+
+  function hideForm() {
+    document.getElementById('rsvp-form').style.display = 'none';
+  }
+  function show(id) {
+    document.getElementById(id).style.display = 'block';
+  }
+
+  // — CSV parser —
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    return lines.map(line => {
+      const cols = []; let cur = '', inQuote = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQuote = !inQuote; }
+        else if (c === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+        else { cur += c; }
+      }
+      cols.push(cur.trim());
+      return cols;
+    });
+  }
+
+  // — Load Guest Book —
+  // RSVP CSV columns: 0=Timestamp, 1=Screening_ID, 2=Name, 3=Comment
+  async function loadGuestBook() {
+    try {
+      const res = await fetch(RSVP_CSV_URL);
+      if (!res.ok) return;
+      const rows = parseCSV(await res.text());
+      // rows[0] is the header row
+      const entries = rows.slice(1).filter(r => r[1] === SCREENING_ID && r[2]);
+      if (!entries.length) return;
+
+      const attending = entries.length;
+      document.getElementById('headcount').textContent =
+        attending === 1 ? '1 guest attending' : attending + ' guests attending';
+
+      const list = document.getElementById('guest-list');
+      entries.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'guest-entry';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'guest-name';
+        nameEl.textContent = r[2];
+        div.appendChild(nameEl);
+        if (r[3]) {
+          const noteEl = document.createElement('div');
+          noteEl.className = 'guest-note';
+          noteEl.textContent = r[3];
+          div.appendChild(noteEl);
+        }
+        list.appendChild(div);
+      });
+
+      document.getElementById('guestbook').classList.remove('hidden');
+      document.getElementById('guestbook-divider-bottom').classList.remove('hidden');
+    } catch (err) {
+      // Guest book is best-effort; silently skip on error
+      console.error('Guest book load failed:', err);
+    }
+  }
+
+  loadGuestBook();
+</script>
+</body>
+</html>
